@@ -19,9 +19,9 @@ public:
     size_type size() { return c.size(); }
     bool empty() { return c.empty; }
     reference front() { return c.front(); }
-    const_reference front() { return c.front(); }
+    const_reference front() const{ return c.front(); }
     reference back() { return c.back(); }
-    const_reference back() { return c.back(); }
+    const_reference back() const{ return c.back(); }
     void push(const T& value) { return c.push_back(value); }
     void pop() { return c.pop_front(); }
 };

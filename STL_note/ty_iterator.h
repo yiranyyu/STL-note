@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #ifndef _TY_ITERATOR_H
 #define _TY_ITERATOR_H
@@ -16,7 +16,7 @@ struct random_access_iterator_tag : public bidirectional_iterator_tag {};
 // any iterator class inheriting this class template will be compatible the STL
 template <typename Category,
     typename T,
-    typename Distance = std::ptrdiff_t,
+    typename Distance = ptrdiff_t,
     typename Pointer = T*,
     typename Reference = T&>
     struct iterator
@@ -37,13 +37,14 @@ struct iterator_traits
     typedef typename T::pointer             pointer;
     typedef typename T::reference           reference;
 };
+
 // partial specialization of primitive pointer type
 template <typename T>
 struct iterator_traits<T*>
 {
     typedef random_access_iterator_tag  iterator_category;
     typedef T                           value_type;
-    typedef typename std::ptrdiff_t     difference_type;
+    typedef ptrdiff_t                   difference_type;
     typedef T*                          pointer;
     typedef T&                          reference;
 };
@@ -54,7 +55,7 @@ struct iterator_traits<const T*>
 {
     typedef random_access_iterator_tag  iterator_category;
     typedef T                           value_type;
-    typedef typename std::ptrdiff_t     difference_type;
+    typedef ptrdiff_t                   difference_type;
     typedef const T*                    pointer;
     typedef const T&                    reference;
 };

@@ -3,7 +3,7 @@
 #define _TY_UNINITIALIZED_H
 
 #include "ty_construct.h"
-#include <memory>
+#include "ty_algobase.h"
 
 namespace ty {
 template <typename ForwardIterator, typename Size, typename T>
@@ -20,11 +20,11 @@ inline ForwardIterator __uninitialized_fill_n(ForwardIterator first, Size size, 
     // effective way to init the memory. For non-POD types, need to take the most safe way
     // to init the memory
     typedef typename __type_traits<T1>::is_POD_type is_POD;
-    return __uninitialized_fill_n_aux(first, size, x, is_POD());
+    return __uninitialized_fill_n_aux(first, size, x, is_POD{});
 }
 
 // This function works if copy ctor same as assigment and dtor is tirvial
-// Ö´ÐÐÁ÷³Ì½åÓÉ²ÎÊýÍÆµ¼»úÖÆ×ªµ½ÒÔÏÂº¯Êý
+// Ö´ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½É²ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½Âºï¿½ï¿½ï¿½
 template <typename ForwardIterator, typename Size, typename T>
 inline ForwardIterator __uninitialized_fill_n_aux(ForwardIterator first, Size n, const T &x, __true_type)
 {
@@ -49,27 +49,21 @@ inline ForwardIterator __uninitialized_fill_n_aux(ForwardIterator first, Size n,
         destroy(first, current); // [first, current]
         throw;
     }
-    return cur;
-}
-
-template <typename InputIterator, typename ForwardIterator>
-inline ForwardIterator uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result)
-{
-    return __uninitialized_copy(first, last, result, value_type(result));
 }
 
 template <typename InputIterator, typename ForwardIterator, typename T>
-inline ForwardIterator __uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result, T*)
+inline ForwardIterator __uninitialized_copy(InputIterator first, InputIterator last,
+                                            ForwardIterator result, T*)
 {
     typedef typename __type_traits<T>::is_POD_type is_POD;
     // try to use is_POD() to let the compiler find the function to call 
-    return __uninitialized_copy_aux(first, last, result, is_POD());
+    return __uninitialized_copy_aux(first, last, result, is_POD{});
 }
 
 template <typename InputIterator, typename ForwardIterator>
 inline ForwardIterator
-__uninitialized_copy_aux(InputIterator first,
-                         InputIterator last, ForwardIterator result, __false_type)
+__uninitialized_copy_aux(InputIterator first, InputIterator last,
+                         ForwardIterator result, __false_type)
 {
     ForwardIterator current = result;
     try
@@ -93,14 +87,18 @@ __uninitialized_copy_aux(InputIterator first,
     return copy(first, last, result);
 }
 
-template<>
+template <typename InputIterator, typename ForwardIterator>
+inline ForwardIterator uninitialized_copy(InputIterator first, InputIterator last, ForwardIterator result)
+{
+    return __uninitialized_copy(first, last, result, value_type(result));
+}
+
 inline char* uninitialized_copy(const char *first, const char *last, char *result)
 {
     memmove(result, first, last - first);
     return result + (last - first);
 }
 
-template<>
 inline wchar_t* uninitialized_copy(const wchar_t *first, const wchar_t *last, wchar_t *result)
 {
     memmove(result, first, sizeof(wchar_t) * (last - first));
@@ -119,7 +117,7 @@ inline ForwardIterator
 __uninitialized_fill(ForwardIterator first, ForwardIterator last, const T &x, T1*)
 {
     typedef typename __type_traits<T1>::is_POD_type is_POD;
-    return __uninitialized_fill_aux(first, last, x, is_POD());
+    return __uninitialized_fill_aux(first, last, x, is_POD{});
 }
 
 template <typename ForwardIterator, typename T>

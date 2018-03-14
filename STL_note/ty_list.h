@@ -2,21 +2,11 @@
 
 #ifndef _TY_LIST_H
 #define _TY_LIST_H
-#include <cctype>
 #include "ty_iterator.h"
 #include "ty_alloc.h"
 #include "ty_construct.h"
+#include "ty_types.h"
 namespace ty {
-
-#ifdef _USE_MALLOC
-template<int> class __malloc_alloc_template;
-typedef __malloc_alloc_template<0> malloc_alloc;
-typedef malloc_alloc alloc;
-#else
-template<bool, int> class __default_alloc_template;
-typedef  __default_alloc_template<0, 0> alloc;
-#endif
-
 template <typename T>
 struct __list_node
 {
@@ -31,26 +21,26 @@ struct __list_iterator
     typedef __list_iterator<T, T&, T*>      iterator;
     typedef __list_iterator<T, Ref, Ptr>    self;
 
-    typedef typename ty::bidirectional_iterator_tag     iterator_category;
+    typedef bidirectional_iterator_tag                  iterator_category;
     typedef T                                           value_type;
     typedef Ptr                                         pointer;
     typedef Ref                                         reference;
     typedef __list_node<T>*                             link_type;
     typedef size_t                                      size_type;
-    typedef typename std::ptrdiff_t                     difference_type;
+    typedef ptrdiff_t                                   difference_type;
 
     link_type   node;// points the list_node
 
     // constructor
-    __list_iterator(link_type x) : node(x.node){}
+    __list_iterator(link_type x) : node(x){}
     __list_iterator() {}// default ctor
     __list_iterator(const __list_iterator &x) : node(x.node) {}
 
     bool operator==(const self &that)const { return node == that.node; }
-    bool operator!=(const self &that)const { return !(node == that.node); }
+    bool operator!=(const self &that)const { return node != that.node; }
 
     // dereference
-    reference operator*() { return node->data; }
+    reference operator*()const { return node->data; }
 
     // member access
     pointer operator->()const { return &(this->operator*()); }
@@ -99,7 +89,7 @@ public:
     typedef value_type&                                         reference;
     typedef const value_type&                                   const_reference;
     typedef size_t                                              size_type;
-    typedef typename std::ptrdiff_t                             difference_type;
+    typedef ptrdiff_t                                           difference_type;
     typedef Alloc                                               allocator_type;
     typedef __list_iterator<T, reference, pointer>              iterator;
     typedef __list_iterator<const T, const_reference, const_pointer> 
@@ -108,12 +98,15 @@ public:
     list() { empty_initialize(); }
     void empty_initialize()
     {
-        this->node = get_node;
+        this->node = get_node();
         this->node->next = node;
         this->node->prev = node;
     }
     iterator begin() { return node->next; }
     iterator end() { return node; }
+    const_iterator begin() const { return const_iterator(const_cast<list*>(this)->begin()); }
+    const_iterator end() const { return const_iterator(const_cast<list*>(this)->end()); }
+
     bool empty()const { return node->next == node; }
     size_type size() const 
     {
@@ -121,7 +114,6 @@ public:
     }
     reference front() { return *begin(); }
     reference back() { return *(--end()); }
-    void push_back(const T &x) { insert(end(), x); }
     iterator insert(iterator position, const T &x);
     
     void pop_front() { erase(begin()); }
@@ -161,11 +153,11 @@ template <typename T, typename Alloc>
 list<T, Alloc>::iterator
 list<T, Alloc>::insert(iterator position, const T &x)
 {
-    link_type tmp = creat_node(x);
+    link_type tmp = create_node(x);
     tmp->next = position.node;
     tmp->prev = position.node->prev;
-    position.node->prev->next = tmp;
-    position.node->prev = tmp;
+    tmp->prev->next = tmp;
+    tmp->next->prev = tmp;
     return tmp;
 }
 

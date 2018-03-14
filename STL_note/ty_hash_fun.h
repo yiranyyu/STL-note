@@ -1,4 +1,6 @@
 #pragma once
+
+#include "ty_types.h"
 namespace ty
 {
 template <typename Key> struct hash {};
@@ -27,7 +29,7 @@ struct hash<const char*>
 template <>
 struct hash<char>
 {
-    size_t operator()(char x) const { return x; }
+    size_t operator()(char x) const { return static_cast<size_t>(x); }
 };
 template <>
 struct hash<unsigned char>
@@ -38,13 +40,13 @@ struct hash<unsigned char>
 template <>
 struct hash<signed char>
 {
-    size_t operator()(signed char x) const { return x; }
+    size_t operator()(signed char x) const { return static_cast<size_t>(x); }
 };
 
 template <>
 struct hash<short>
 {
-    size_t operator()(short x) const { return x; }
+    size_t operator()(short x) const { return static_cast<size_t>(x); }
 };
 
 template <>
@@ -56,7 +58,7 @@ struct hash<unsigned short>
 template <>
 struct hash<int>
 {
-    size_t operator()(int x) const { return x; }
+    size_t operator()(int x) const { return static_cast<size_t>(x); }
 };
 template <>
 struct hash<unsigned int>
@@ -67,7 +69,7 @@ struct hash<unsigned int>
 template <>
 struct hash<long>
 {
-    size_t operator()(long x) const { return x; }
+    size_t operator()(long x) const { return static_cast<size_t>(x); }
 };
 
 template <>

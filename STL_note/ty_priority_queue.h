@@ -14,23 +14,23 @@ public:
     using const_reference = Sequence::const_reference;
 protected:
     Sequence c; // container
-    Compare  comp;
+    Compare  cmp;
 public:
     priority_queue() :c() {}
-    explicit priority_queue(const Compare &x) : c(), comp(x) {}
+    explicit priority_queue(const Compare &x) : c(), cmp(x) {}
 
     template <typename InputIterator>
     priority_queue(InputIterator first, InputIterator last, const Compare &x)
-        : c(first, last), comp(x)
+        : c(first, last), cmp(x)
     {
-        make_heap(c.begin(), c.end(), comp);
+        make_heap(c.begin(), c.end(), cmp);
     }
 
     template <typename InputIterator>
     priority_queue(InputIterator first, InputIterator last)
         : c(first, last)
     {
-        make_heap(c.begin(), c.end(), comp);
+        make_heap(c.begin(), c.end(), cmp);
     }
 
     bool empty()const { return c.empty(); }
@@ -41,7 +41,7 @@ public:
         try
         {
             c.push_back(x);
-            push_heap(c.begin(), c.end(), comp);
+            push_heap(c.begin(), c.end(), cmp);
         }
         catch (...) { c.clear(); }
     }
@@ -50,7 +50,7 @@ public:
     {
         try
         {
-            pop_heap(c.begin(), c.end(), comp);
+            pop_heap(c.begin(), c.end(), cmp);
             c.pop_back();
         }
         catch (...) { c.clear(); }

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef _TY_CONSTRUCT_H
 #define _TY_CONSTRUCT_H
 
@@ -29,7 +29,7 @@ template <typename ForwardIterator, typename T>
 inline void __destroy(ForwardIterator first, ForwardIterator last, T*)
 {
     typedef typename __type_traits<T>::has_trivial_destructor trivial_destructor;
-    __destroy_aux(first, last, trivial_destructor());
+    __destroy_aux(first, last, trivial_destructor{});
 }
 
 // for types with non-trivial dtor

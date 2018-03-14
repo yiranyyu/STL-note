@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _TY_TYPE_TRAITS_H
 #define _TY_TYPE_TRAITS_H
@@ -14,12 +14,12 @@ template<class _Ty,
     using value_type = _Ty;
     using type = integral_constant;
 
-    constexpr operator value_type() const _NOEXCEPT
+    constexpr operator value_type() const noexcept
     {	// return stored value
         return (value);
     }
 
-    constexpr value_type operator()() const _NOEXCEPT
+    constexpr value_type operator()() const noexcept
     {	// return stored value
         return (value);
     }
@@ -35,9 +35,9 @@ using __false_type = bool_constant<false>;
 template <typename T>
 struct __type_traits
 {
-    // ²»ÒªÒÆ³ıÕâ¸ö³ÉÔ±£¬ËüÍ¨Öª¡°ÓĞÄÜÁ¦×Ô¶¯½«__type_traitsÌØ»¯¡±µÄ±àÒëÆ÷Ëµ£¬ÎÒÃÇÏÖÔÚËù¿´µ½µÄÕâ¸ö
-    // __type_traits templateÊÇÌØÊâµÄ¡£ÕâÊ±ÎªÁËÈ·±£ÍòÒ»±àÒëÆ÷Ò²Ê¹ÓÃÒ»¸öÃûÎª__type_traits¶øÆäÊµ
-    // ºÍ´Ë´¦¶¨Òå²¢ÎŞÈÎºÎ¹ØÁªµÄtemplateÊ±£¬ËùÓĞµÄÊÂÇé¶¼ÄÜË³Àû½øĞĞ
+    // ï¿½ï¿½Òªï¿½Æ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½Í¨Öªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½__type_traitsï¿½Ø»ï¿½ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    // __type_traits templateï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½Ê±Îªï¿½ï¿½È·ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²Ê¹ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½Îª__type_traitsï¿½ï¿½ï¿½ï¿½Êµ
+    // ï¿½Í´Ë´ï¿½ï¿½ï¿½ï¿½å²¢ï¿½ï¿½ï¿½ÎºÎ¹ï¿½ï¿½ï¿½ï¿½ï¿½templateÊ±ï¿½ï¿½ï¿½ï¿½ï¿½Ğµï¿½ï¿½ï¿½ï¿½é¶¼ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     typedef __true_type this_dummy_member_must_be_first;
 
     typedef __false_type has_trivial_default_constructor;

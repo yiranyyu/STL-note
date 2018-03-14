@@ -6,15 +6,6 @@
 #include "ty_construct.h"
 namespace ty
 {
-#ifdef _USE_MALLOC
-template<int> class __malloc_alloc_template;
-typedef __malloc_alloc_template<0> malloc_alloc;
-typedef malloc_alloc alloc;
-#else
-template<bool, int> class __default_alloc_template;
-typedef  __default_alloc_template<0, 0> alloc;
-#endif
-
 struct __slist_node_base
 {
     __slist_node_base *next;
@@ -45,7 +36,7 @@ size_t __slist_size(__slist_node_base *node)
     return result;
 }
 
-// slist µü´úÆ÷»ù±¾½á¹¹
+// slist ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹
 struct __slist_iterator_base
 {
     using size_type = size_t;
@@ -64,7 +55,7 @@ struct __slist_iterator_base
     bool operator!=(const __slist_iterator_base &x)const { return node != x.node; }
 };
 
-// slist µü´úÆ÷½á¹¹
+// slist ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹
 template <typename T, typename Ref, typename Ptr>
 struct __slist_iterator : public __slist_iterator_base
 {
@@ -82,7 +73,7 @@ struct __slist_iterator : public __slist_iterator_base
     __slist_iterator(const iterator &x) : __slist_iterator_base(x.node) {};
 
     reference operator*()const { return ((list_node*)node)->data; }
-    pointer operator->()const { return &(operator*();) }
+    pointer operator->()const { return &(operator*()); }
     
     self &operator++() 
     {
@@ -136,12 +127,12 @@ private:
         list_node_allocator::deallocate(node);
     }
 private:
-    list_node_base head;// ×¢Òâ£¬ head ²»ÊÇÖ¸Õë£¬ÊÇÊµÎï¡£
+    list_node_base head;// ×¢ï¿½â£¬ head ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ë£¬ï¿½ï¿½Êµï¿½ï¡£
 
 public:
     slist() { head.next = nullptr; }
     ~slist() { clear(); }
-    iterator begin() { return iterator((list_node*)head.next;) }
+    iterator begin() { return iterator((list_node*)head.next); }
     iterator end() { return iterator(0); }  // end return iterator of nullptr;
     size_type size()const { return __slist_size(head.next); }
     bool empty()const { return head.next == 0; }
@@ -154,7 +145,16 @@ public:
         that.head.next = tmp;
     }
 
-public:
+    void clear()
+    {
+        while (head.next != nullptr)
+        {
+            auto tmp = head.next;
+            head.next = head.next->next;
+            destroy_node(static_cast<list_node *>(tmp));
+        }
+    }
+
     reference front() { return ((list_node*)head.next)->data; }
     void push_front(const value_type &x)
     {

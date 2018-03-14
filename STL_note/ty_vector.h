@@ -6,17 +6,9 @@
 #include "ty_uninitialized.h"
 #include "ty_construct.h"
 #include <cctype> // for std::prtdiff_t
-using std::addressof;
-namespace ty {
+#include "ty_algobase.h"
 
-#ifdef _USE_MALLOC
-template<int> class __malloc_alloc_template; 
-typedef __malloc_alloc_template<0> malloc_alloc;
-typedef malloc_alloc alloc;
-#else
-template<bool, int> class __default_alloc_template;
-typedef  __default_alloc_template<0, 0> alloc;
-#endif
+namespace ty {
 
 template <typename T, typename Alloc = alloc>
 class vector
@@ -54,14 +46,14 @@ public:
     reference operator[](size_type index)
     {
         return const_cast<reference>(
-            static_cast<const vector<T, Alloc>>(*this)[index])
+            static_cast<const vector<T, Alloc>>(*this)[index]);
     }
     const_reference operator[](size_type index)const { return *(begin() + index); }
 
     reference front() { return *begin(); }
-    reference bace() { return *end(); }
+    reference back() { return *end(); }
     const reference front()const { return *begin(); }
-    const reference bace()const { return *end(); }
+    const reference back()const { return *end(); }
 
     void push_back(const T &value)
     {
@@ -97,7 +89,7 @@ public:
     iterator erase(iterator first, iterator last)
     {
         copy(last, end(), first);
-        new_finish = finish - (last - first);
+        iterator new_finish = finish - (last - first);
         destroy(new_finish, finish);
         finish = new_finish;
     }
@@ -107,7 +99,7 @@ public:
         if (new_size < size())
             erase(begin() + new_size, end());
         else
-            insert(end(), new_size - size, value);
+            insert(end(), new_size - size(), value);
     }
     void resize(size_type new_size) { resize(new_size, T()); }
     void clear() { erase(begin(), end()); }
@@ -152,7 +144,7 @@ vector<T, Alloc>::insert_aux(iterator position, const T &x)
     if (finish != end_of_storage)
     {
         construct(finish, *(finish - 1)); // copy last element
-        ++finish; // 调整水位
+        ++finish; // 锟斤拷锟斤拷水位
         copy_backward(position, finish - 2, finish - 1);
         *position = x;
     }
@@ -197,7 +189,7 @@ vector<T, Alloc>::insert(iterator position, size_type n, const T &x)
         return;
 
     // the rest memory is enough for n elements
-    if (static_cast<size_type>(end_of_storage - end()) > = n)
+    if (static_cast<size_type>(end_of_storage - end()) >= n)
     {
         T x_copy = x;
         const size_type elems_after = finish - position;// number of elements after position(inclusive)
@@ -229,7 +221,7 @@ vector<T, Alloc>::insert(iterator position, size_type n, const T &x)
         try
         {
             // copy elements before position to new space
-            new_finish = unintialized_copy(start, position, new_start);
+            new_finish = uninitialized_copy(start, position, new_start);
             // copy inserted elements to new space
             new_finish = uninitialized_fill_n(new_finish, n, x);
             // copy elements after position to new space

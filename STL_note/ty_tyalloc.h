@@ -11,10 +11,10 @@
 namespace ty
 {
 template<typename T>
-inline allocate(ptrdiff_t size, T*)
+inline T* allocate(ptrdiff_t size, T*)
 {
-    set_new_handler(0);
-    T *tmp = (T*)(::operator new((size_t)(size * sizeof(T)));
+    ::std::set_new_handler(0);
+    T *tmp = (T*)(::operator new((size_t)(size * sizeof(T))));
     if (!tmp)
     {
         std::cerr << "out of memory" << std::endl;
@@ -24,21 +24,9 @@ inline allocate(ptrdiff_t size, T*)
 }
 
 template<typename T>
-inline deallocate(T *buffer)
+inline void deallocate(T *buffer)
 {
     ::operator delete(buffer);
-}
-
-template<typename T1, typename T2>
-inline construct(T1 *ptr, const T2 &value)
-{
-    new(ptr) T1(value); // use placement new to call the constructor of *buffer
-}
-
-template<typename T>
-inline destruct(T *ptr)
-{
-    ptr->~T();
 }
 
 template <typename T>
@@ -63,24 +51,24 @@ public:
     // hint used for locality
     pointer allocate(size_type n, const void *hint = 0)
     {
-        return ::allocate(static_cast<difference_type>(n),
+        return ::ty::allocate(static_cast<difference_type>(n),
                           static_cast<pointer>(0));
     }
 
     void deallocate(pointer ptr)
     {
-        ::deallocate(ptr);
+        ::ty::deallocate(ptr);
     }
 
     template <typename U>
     void construct(pointer ptr, const U &value)
     {
-        ::construct(ptr, value);
+        ::ty::construct(ptr, value);
     }
 
     void destroy(pointer ptr)
     {
-        ::destroy(ptr);
+        ::ty::destroy(ptr);
     }
 
     pointer address(reference x)

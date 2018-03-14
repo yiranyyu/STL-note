@@ -1,13 +1,11 @@
-#pragma once
+ï»¿#pragma once
 #include "ty_iterator.h"
 #include "ty_rb_tree.h"
 #include <vector>
-#define £¨ (
-#define £© )
 namespace ty
 {
 template <typename T, typename Alloc>
-using vector = std::vector<T, Alloc>;
+using vec = ::std::vector<T, Alloc>;
 
 static const int __stl_num_primes = 28;
 static const unsigned long __stl_prime_list[__stl_num_primes] = {
@@ -20,8 +18,8 @@ static const unsigned long __stl_prime_list[__stl_num_primes] = {
 };
 inline unsigned long __stl_next_prime(unsigned long n)
 {
-    const auto first = __stl_prime_list;
-    const auto last = first + __stl_num_primes;
+    const auto *first = __stl_prime_list;
+    const auto *last = first + __stl_num_primes;
     auto pos = first;       //<---------------ERROR, fix it if complete the genetic algorithm lower_bound
     //const auto pos = lower_bound(first, last, n);
     return pos == last ? *(last - 1) : *pos;
@@ -52,8 +50,8 @@ struct __hashtable_iterator
     using reference     = Value&;
     using pointer       = Value*;
 
-    node *cur;  // µü´úÆ÷Ä¿Ç°ËùÖ¸Ö®½Úµã
-    hashtable* ht;  // ±£³ÖºÍÈİÆ÷µÄÁ¬½á¹ØÏµ(ÒòÎª¿ÉÄÜĞèÒª´ÓbucketÌøµ½bucket)
+    node *cur;  // è¿­ä»£å™¨ç›®å‰æ‰€æŒ‡ä¹‹èŠ‚ç‚¹
+    hashtable* ht;  // ä¿æŒå’Œå®¹å™¨çš„è¿ç»“å…³ç³»(å› ä¸ºå¯èƒ½éœ€è¦ä»bucketè·³åˆ°bucket)
     
     __hashtable_iterator(node *n, hashtable *table) : cur(n), ht(table) {};
     __hashtable_iterator() {}
@@ -85,6 +83,7 @@ template <typename Value, typename Key, typename HashFcn,
     typename ExtractKey, typename EqualKey, typename Alloc> 
 class hashtable
 {
+    friend class __hashtable_iterator<Value, Key, HashFcn, ExtractKey, EqualKey, Alloc>;
 public:
     using hasher    = HashFcn;  // rename the type parameter
     using key_equal = EqualKey; // rename the type parameter
@@ -101,7 +100,7 @@ private:
     using node = __hashtable_node<Value>;
     using node_allocator = simple_alloc<node, Alloc>;
     
-    vector<node*, Alloc> buckets;
+    vec<node*, Alloc> buckets;
     size_type num_elements;
 
 public:
@@ -112,7 +111,7 @@ public:
     }
     void initialize_buckets(size_type n)
     {
-        // ·µ»Ø×î½Ó½ü n µÄËØÊısize
+        // è¿”å›æœ€æ¥è¿‘ n çš„ç´ æ•°size
         const size_type n_buckets = next_size(n);
         buckets.reserve(n_buckets);
         buckets.insert(buckets.begin(), n_buckets, (node*)0);
@@ -128,35 +127,35 @@ public:
     }
     pair<iterator, bool> insert_unique(const value_type &obj)
     {
-        resize(num_elements + 1);   //ÅĞ¶ÏÊÇ·ñÒªÖØ½¨±í¸ñ£¬Èç¹ûĞèÒª¾ÍÀ©³ä
+        resize(num_elements + 1);   //åˆ¤æ–­æ˜¯å¦è¦é‡å»ºè¡¨æ ¼ï¼Œå¦‚æœéœ€è¦å°±æ‰©å……
         return insert_unique_noresize(obj);
     }
     void resize(size_type num_elements_hint)
     {
-        // "±í¸ñÖØ½¨Óë·ñ"µÄÅĞ¶ÏÔ­Ôò£¬ÊÇÄÃÔªËØµÄ¸öÊı£¨°ÑĞÂÔöÔªËØ¼ÆÈëºó£©ºÍbucket vectorµÄ´óĞ¡À´±È£¬
-        // Èç¹ûÇ°Õß´óÓÚºóÕß£¬¾ÍÖØ½¨±í¸ñ ÓÉ´Ë¿ÉÖª£¬Ã¿¸öbucket(list)µÄ×î´óÈİÁ¿ºÍbucket vectorµÄ´óĞ¡ÏàÍ¬
+        // "è¡¨æ ¼é‡å»ºä¸å¦"çš„åˆ¤æ–­åŸåˆ™ï¼Œæ˜¯æ‹¿å…ƒç´ çš„ä¸ªæ•°(æŠŠæ–°å¢å…ƒç´ è®¡å…¥å)å’Œbucket vectorçš„å¤§å°æ¥æ¯”ï¼Œ
+        // å¦‚æœå‰è€…å¤§äºåè€…ï¼Œå°±é‡å»ºè¡¨æ ¼ ç”±æ­¤å¯çŸ¥ï¼Œæ¯ä¸ªbucket(list)çš„æœ€å¤§å®¹é‡å’Œbucket vectorçš„å¤§å°ç›¸åŒ
         const size_type old_n = buckets.size();
         if (num_elements_hint > old_n)
         {
             const size_type n = next_size(num_elements_hint);// next prime 
             if (n > old_n)
             {
-                vector<node*, Alloc> tmp(n, (node*)0); // ÉèÖÃĞÂµÄ buckets
+                vec<node*, Alloc> tmp(n, (node*)0); // è®¾ç½®æ–°çš„ buckets
                 try
                 {
-                    // ´¦ÀíÃ¿Ò»¸ö¾ÉµÄbucket
+                    // å¤„ç†æ¯ä¸€ä¸ªæ—§çš„bucket
                     for (size_type bucket = 0; bucket < old_n; ++bucket)
                     {
                         node *first = buckets[bucket];
-                        while (first)// ´®ĞĞ»¹Ã»½áÊøÊ±
+                        while (first)// ä¸²è¡Œè¿˜æ²¡ç»“æŸæ—¶
                         {
                             size_type new_bucket = bkt_num(first->val, n);// get the pos in new buckets
-                            // 1. Áî¾ÉbucketÖ¸ÏòÆäËù¶ÔÓ¦µÄ´®ĞĞµÄÏÂÒ»¸ö½Úµã(ÒÔ±ãµü´ú´¦Àí)
+                            // 1. ä»¤æ—§bucketæŒ‡å‘å…¶æ‰€å¯¹åº”çš„ä¸²è¡Œçš„ä¸‹ä¸€ä¸ªèŠ‚ç‚¹(ä»¥ä¾¿è¿­ä»£å¤„ç†)
                             buckets[bucket] = first->next;
-                            // 2. 3. ½«µ±Ç°½Úµã²åÈëµ½ĞÂµÄbucketÄÚ£¬³ÉÎªÆä¶ÔÓ¦´®ĞĞµÄµÚÒ»¸ö½Úµã
+                            // 2. 3. å°†å½“å‰èŠ‚ç‚¹æ’å…¥åˆ°æ–°çš„bucketå†…ï¼Œæˆä¸ºå…¶å¯¹åº”ä¸²è¡Œçš„ç¬¬ä¸€ä¸ªèŠ‚ç‚¹
                             first->next = tmp[new_bucket];
                             tmp[new_bucket] = first;
-                            // 4. »Øµ½¾ÉµÄbucketËùÖ¸µÄ´ı´¦ÀíĞĞ£¬×¼±¸´¦ÀíÏÂÒ»¸ö½Úµã
+                            // 4. å›åˆ°æ—§çš„bucketæ‰€æŒ‡çš„å¾…å¤„ç†è¡Œï¼Œå‡†å¤‡å¤„ç†ä¸‹ä¸€ä¸ªèŠ‚ç‚¹
                             first = buckets[bucket];
                         }
                     }
@@ -168,17 +167,17 @@ public:
     pair<iterator, bool> insert_unique_noresize(const value_type &obj)
     {
         const size_type n = bkt_num(obj);
-        node *first = buckets[n];   // first Ö¸Ïòbuckts¶ÔÓ¦´®ĞĞÍ·²¿
+        node *first = buckets[n];   // first æŒ‡å‘bucktså¯¹åº”ä¸²è¡Œå¤´éƒ¨
 
-        // Èç¹ûbuckets[n]ÒÑ±»Õ¼ÓÃ£¬½«½øÈëÒÔÏÂÑ­»·
+        // å¦‚æœbuckets[n]å·²è¢«å ç”¨ï¼Œå°†è¿›å…¥ä»¥ä¸‹å¾ªç¯
         for (node *cur = first; cur != nullptr; cur = cur->next)
         {
-            // ½ûÖ¹ÖØ¸´¼üÖµ
+            // ç¦æ­¢é‡å¤é”®å€¼
             if (equals(get_key(cur->val), get_key(obj)))
                 return pair<iterator, bool>(iterator(cur, this), false);
         }
 
-        // Àë¿ªÒÔÉÏÑ­»·(»ò¸ù±¾Î´½øÈëÑ­»·Ê±),firstÖ¸ÏòbucketsËùÖ¸Á´±íµÄÍ·²¿½Úµã
+        // ç¦»å¼€ä»¥ä¸Šå¾ªç¯(æˆ–æ ¹æœ¬æœªè¿›å…¥å¾ªç¯æ—¶),firstæŒ‡å‘bucketsæ‰€æŒ‡é“¾è¡¨çš„å¤´éƒ¨èŠ‚ç‚¹
         node *tmp = new_node(obj);
         tmp->next = first;
         buckets[n] = tmp;
@@ -192,14 +191,14 @@ public:
     }
     iterator insert_equal_noresize(const value_type &obj)
     {
-        const size_type n = bkt_num(obj);  // ¾ö¶¨ obj Ó¦¸ÃÎ»ÓÚ#n bucket
+        const size_type n = bkt_num(obj);  // å†³å®š obj åº”è¯¥ä½äº#n bucket
         node* first = buckets[n];
 
         for (node *cur = first; cur; cur = cur->next)
         {
             if (equals(get_key(cur->val), get_key(obj)))
             {
-                // Èç¹û·¢ÏÖÓëÁ´±íÖĞµÄÄ³¼üÖµÏàÍ¬,¾ÍÂíÉÏ²åÈë£¬È»ºó·µ»Ø
+                // å¦‚æœå‘ç°ä¸é“¾è¡¨ä¸­çš„æŸé”®å€¼ç›¸åŒ,å°±é©¬ä¸Šæ’å…¥ï¼Œç„¶åè¿”å›
                 node *tmp = new_node(obj);
                 tmp->next = cur->next;
                 cur->next = tmp;
@@ -207,7 +206,7 @@ public:
                 return iterator(tmp, this);
             }
         }
-        // ±íÊ¾Ã»ÓĞ·¢ÏÖÖØ¸´µÄ¼üÖµ
+        // è¡¨ç¤ºæ²¡æœ‰å‘ç°é‡å¤çš„é”®å€¼
         node *tmp = new_node(obj);
         tmp->next = first;
         buckets[n] = tmp;
@@ -256,19 +255,19 @@ public:
             buckets[i] = 0;
         }
         num_elements = 0;
-        // ×¢Òâ£¬ buckets vector²¢Î´ÊÍ·Åµô¿Õ¼ä£¬ÈÔ±£ÓĞÔ­À´´óĞ¡
+        // æ³¨æ„ï¼Œ buckets vectorå¹¶æœªé‡Šæ”¾æ‰ç©ºé—´ï¼Œä»ä¿æœ‰åŸæ¥å¤§å°
     }
 
     void copy_from(const hashtable &that)
     {
-        // ÏÈÇå³ı¼º·½µÄbuckets vector,Õâ²Ù×÷ÊÇµ÷ÓÃvector::clear, ½«Õû¸öÈİÆ÷Çå¿Õ
+        // å…ˆæ¸…é™¤å·±æ–¹çš„buckets vector,è¿™æ“ä½œæ˜¯è°ƒç”¨vector::clear, å°†æ•´ä¸ªå®¹å™¨æ¸…ç©º
         this->buckets.clear();
-        // Îª¼º·½µÄbuckets vector±£Áô¿Õ¼ä£¬Ê¹Óë¶Ô·½ÏàÍ¬
-        // Èç¹û¼º·½¿Õ¼ä´óÓÚ¶Ô·½£¬¾Í²»¶¯£¬Èç¹û¼º·½¿Õ¼äĞ¡ÓÚ¶Ô·½£¬¾Í»áÔö´ó
+        // ä¸ºå·±æ–¹çš„buckets vectorä¿ç•™ç©ºé—´ï¼Œä½¿ä¸å¯¹æ–¹ç›¸åŒ
+        // å¦‚æœå·±æ–¹ç©ºé—´å¤§äºå¯¹æ–¹ï¼Œå°±ä¸åŠ¨ï¼Œå¦‚æœå·±æ–¹ç©ºé—´å°äºå¯¹æ–¹ï¼Œå°±ä¼šå¢å¤§
         this->buckets.reserve(that.buckets.size());
         
-        // ´Ó¼º·½µÄbuckets vectorÎ²¶Ë¿ªÊ¼£¬²åÈën¸öÔªËØ£¬ÆäÖµÎªnullÖ¸Õë
-        // ×¢Òâ£¬´ËÊ±buckets vectorÎª¿Õ£¬ËùÒÔËùÎ½Î²¶Ë¾ÍÊÇÆğÍ·´¦
+        // ä»å·±æ–¹çš„buckets vectorå°¾ç«¯å¼€å§‹ï¼Œæ’å…¥nä¸ªå…ƒç´ ï¼Œå…¶å€¼ä¸ºnullæŒ‡é’ˆ
+        // æ³¨æ„ï¼Œæ­¤æ—¶buckets vectorä¸ºç©ºï¼Œæ‰€ä»¥æ‰€è°“å°¾ç«¯å°±æ˜¯èµ·å¤´å¤„
         this->buckets.insert(this->buckets.end(), that.buckets.size(), (node*)0);
         try
         {

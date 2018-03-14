@@ -3,15 +3,6 @@
 #include "ty_rb_tree.h"
 namespace ty
 {
-#ifdef _USE_MALLOC
-template<int> class __malloc_alloc_template;
-typedef __malloc_alloc_template<0> malloc_alloc;
-typedef malloc_alloc alloc;
-#else
-template<bool, int> class __default_alloc_template;
-typedef  __default_alloc_template<0, 0> alloc;
-#endif
-
 template<typename Key, typename Value, typename Compare = less<Key>, typename Alloc = alloc>
 class map
 {
@@ -45,13 +36,13 @@ private:
     rep_type t; // using rb_tree to represent the set
 
 public:
-    using pointer = rep_type::pointer;
+    using pointer       = rep_type::pointer;
     using const_pointer = rep_type::const_pointer;
-    using reference = rep_type::reference;
+    using reference     = rep_type::reference;
     using const_reference = rep_type::const_reference;
-    using iterator = rep_type::iterator;
+    using iterator      = rep_type::iterator;
     using const_iterator = rep_type::const_iterator;
-    using size_type = rep_type::size_type;
+    using size_type      = rep_type::size_type;
     using difference_type = rep_type::difference_type;
     // ... other functions and types 
     pair<iterator, bool> insert(const value_type &x) {

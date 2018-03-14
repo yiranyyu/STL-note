@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "ty_deque.h"
 namespace ty

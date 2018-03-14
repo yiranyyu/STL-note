@@ -1,8 +1,10 @@
-#pragma once
+ï»¿#pragma once
 #include "ty_alloc.h"
 #include <cctype>
+#include <cstddef>
 #include "ty_iterator.h"
 #include "ty_uninitialized.h"
+#include "ty_algobase.h"
 
 namespace ty {
 
@@ -23,23 +25,24 @@ struct __deque_iterator
 
     static size_t buffer_size() { return __deque_buf_size(sizeof(T)); }
     
-    typedef random_access_iterator_tag      iterator_category;
-    typedef T                               value_type;
-    typedef Ref                             reference;
-    typedef Ptr                             pointer;
-    typedef size_t                          size_type;
-    typedef typename std::ptrdiff_t         difference_type;
-    typedef T**                             map_pointer;    // pointer to map of deque
-    typedef __deque_iterator                self;
+    using iterator_category = random_access_iterator_tag;
+    using value_type = T;
+    using reference = Ref;
+    using pointer = Ptr;
+    using size_type = size_t;
+    using difference_type = ptrdiff_t;
+    using map_pointer = T * *; // pointer to map of deque
+    using self = __deque_iterator<T, Ref, Ptr>;
+
     // Data member
     T *cur;
     T *first;
     T *last;
     map_pointer node;
 
-    // method
-    
-    __deque_iterator(void*) {}
+    __deque_iterator(void *)
+        :cur(0), first(0), last(0), node(0)
+    {}
 
     // set new node 
     void set_node(map_pointer new_node)
@@ -97,8 +100,10 @@ struct __deque_iterator
     {
         difference_type offset = n + (cur - first);
         if (offset >= 0 && offset < difference_type(buffer_size()))
+        {
             // dst is in same buffer
             cur += n;
+        }
         else
         {
             // dst is in another buffer
@@ -168,9 +173,9 @@ protected:  // Data members
     size_type map_size;
     iterator start;     // point at first element in deque
     iterator finish;    // point after last element in deque
-    
+
 public:
-    deque(int n, const value_type &value)
+    deque(size_type n, const value_type &value)
         :start(0), finish(0), map(0), map_size(0)
     { 
         fill_initialize(n, value);
@@ -186,13 +191,25 @@ public:
     
     reference front() { return *start; }
     const_reference front()const { return *start; }
-    reference back() { return *(--end()); }
-    const_reference back()const { return *(--end()); }
+    reference back()
+    {
+        iterator tmp = finish;
+        --tmp;
+        return *tmp;
+    }
+
+    const_reference back()const
+    {
+        iterator tmp = finish;
+        --tmp;
+        return *tmp;
+    }
 
     // call iterator::operator-(const iterator&)
-    size_type size()const { return finish - start;; }
+    size_type size()const { return static_cast<size_type>(finish - start); }
 
     size_type max_size()const { return size_type(-1); }
+
     bool empty()const { return finish == start; }
 
     void push_back(const value_type &value)
@@ -212,10 +229,10 @@ public:
     {
         if (start.cur != start.first)
         {
-            construct(start.cur - 1, t);
+            construct(start.cur - 1, value);
             --start.cur;
         }
-        els
+        else
             push_front_aux(value);
     }
     void push_front_aux(const value_type &value);
@@ -225,6 +242,7 @@ public:
         if (nodes_to_add + 1 > map_size - (finish.node - map))
             reallocate_map(nodes_to_add, false);
     }
+
     void reserve_map_at_front(size_type nodes_to_add = 1)
     {
         if (nodes_to_add > start.node - map)
@@ -263,11 +281,20 @@ public:
     iterator erase(iterator first, iterator last);
 
     iterator insert(iterator position, const value_type &value);
-    iterator insert_aux(iterator position, const value_type &value);
+    iterator insert_aux(iterator pos, const value_type &x);
 private:
     static size_type initial_map_size() { return 8; }
     void create_map_and_nodes(size_type num_elements);
     void fill_initialize(size_type n, const value_type &value);
+    pointer allocate_node()
+    {
+        auto p = data_allocator::allocate(iterator::buffer_size());
+        return p;
+    }
+    void deallocate_node(pointer p)
+    {
+        data_allocator::deallocate(p, iterator::buffer_size());
+    }
 };
 
 template <typename T, typename Alloc>
@@ -295,23 +322,23 @@ void deque<T, Alloc>::fill_initialize(size_type n, const value_type &value)
 template <typename T, typename Alloc>
 void deque<T, Alloc>::create_map_and_nodes(size_type num_elements)
 {
-    // ËùĞè½ÚµãÊı = £¨ÔªËØ¸öÊı / Ã¿¸ö»º³åÇø¿ÉÈİÄÉµÄÔªËØ¸öÊı£© + 1
-    // Èç¹û¸ÕºÃÕû³ı£¬Ôò¶à·ÖÅäÒ»¸ö½Úµã
+    // æ‰€éœ€èŠ‚ç‚¹æ•° = ï¼ˆå…ƒç´ ä¸ªæ•° / æ¯ä¸ªç¼“å†²åŒºå¯å®¹çº³çš„å…ƒç´ ä¸ªæ•°ï¼‰ + 1
+    // å¦‚æœåˆšå¥½æ•´é™¤ï¼Œåˆ™å¤šåˆ†é…ä¸€ä¸ªèŠ‚ç‚¹
     size_type num_nodes = num_elements / iterator::buffer_size() + 1;
     
     // a map manage some nodes, at least 8, at most : nodes needed plus 2
     map_size = max(initial_map_size(), num_nodes + 2);
     map = map_allocator::allocate(map_size);
 
-    // ÒÔÏÂÁî nstart ºÍ nfinishÖ¸ mapËùÓµÓĞÖ®È«²¿½ÚµãµÄ×îÖĞÑëÇøÓò
-    // ±£³ÖÔÚ×îÖĞÑë£¬¿ÉÊ¹Í·Î²Á½¶ËµÄÀ©³äÄÜÁ¿Ò»Ñù´ó¡£Ã¿¸ö½Úµã¶ÔÓ¦Ò»¸ö»º³åÇø
+    // ä»¥ä¸‹ä»¤ nstart å’Œ nfinishæŒ‡ mapæ‰€æ‹¥æœ‰ä¹‹å…¨éƒ¨èŠ‚ç‚¹çš„æœ€ä¸­å¤®åŒºåŸŸ
+    // ä¿æŒåœ¨æœ€ä¸­å¤®ï¼Œå¯ä½¿å¤´å°¾ä¸¤ç«¯çš„æ‰©å……èƒ½é‡ä¸€æ ·å¤§ã€‚æ¯ä¸ªèŠ‚ç‚¹å¯¹åº”ä¸€ä¸ªç¼“å†²åŒº
     map_pointer nstart = map + (map_size - num_nodes) / 2;
     map_pointer nfinish = nstart + num_nodes - 1;
 
     map_pointer cur;
     try
     {
-        //ÎªÃ¿¸öÏÖÓÃ½ÚµãÅäÖÃ»º³åÇø
+        //ä¸ºæ¯ä¸ªç°ç”¨èŠ‚ç‚¹é…ç½®ç¼“å†²åŒº
         for (cur = nstart; cur <= nfinish; ++cur)
             *cur = allocate_node();
     }
@@ -330,7 +357,7 @@ void deque<T, Alloc>::create_map_and_nodes(size_type num_elements)
 template <typename T, typename Alloc>
 void deque<T, Alloc>::push_back_aux(const value_type &value)
 {
-    reserve_map_at_back();  // Èô·ûºÏÄ³ÖÖÌõ¼şÔòÖØ»»Ò»¸ömap
+    reserve_map_at_back();  // è‹¥ç¬¦åˆæŸç§æ¡ä»¶åˆ™é‡æ¢ä¸€ä¸ªmap
     *(finish.node + 1) = allocate_node();
     try
     {
@@ -384,8 +411,8 @@ void deque<T, Alloc>::reallocate_map(size_type nodes_to_add, bool add_at_front)
     {
         size_type new_map_size = map_size + max(map_size, nodes_to_add) + 2;
         map_pointer new_map = map_allocator::allocate(new_map_size);
-        new_nstart = new_map = (new_map_size - new_num_nodes) / 2
-            + (add_at_front ? nodes_to_add : 0);
+        new_nstart = new_map + ((new_map_size - new_num_nodes) / 2
+            + (add_at_front ? nodes_to_add : 0));
         copy(start.node, finish.node + 1, new_nstart);
         map_allocator::deallocate(map, map_size);
         
@@ -400,7 +427,7 @@ void deque<T, Alloc>::reallocate_map(size_type nodes_to_add, bool add_at_front)
 template <typename T, typename Alloc>
 void deque<T, Alloc>::pop_back_aux()
 {
-    deallcoate_node(finish.first);  // free the buffer start at finish.first
+    deallocate_node(finish.first);  // free the buffer start at finish.first
     finish.set_node(finish.node - 1);
     finish.cur = finish.last - 1;
     destroy(finish.cur);    // finish points the end of last element
@@ -411,7 +438,7 @@ void deque<T, Alloc>::pop_front_aux()
 {
     destroy(start.cur);
 
-    deaallocate_node(start.first);
+    deallocate_node(start.first);
     start.set_node(start.node + 1);
     start.cur = start.first;
 }
@@ -431,7 +458,7 @@ void deque<T, Alloc>::clear()
     {
         destroy(start.cur, start.last);     // elements in first buffer
         destroy(finish.first, finish.cur);  // elements in last buffer
-        // ´Ë´¦±£ÁôÍ·»º³åÇø
+        // æ­¤å¤„ä¿ç•™å¤´ç¼“å†²åŒº
         data_allocator::deallocate(finish.first, iterator::buffer_size());
     }
     else
@@ -520,9 +547,9 @@ deque<T, Alloc>::insert(iterator position, const value_type &value)
 
 template <typename T, typename Alloc>
 typename deque<T, Alloc>::iterator
-deque<T, Alloc>::insert_aux(iterator postion, const value_type &value)
+deque<T, Alloc>::insert_aux(iterator pos, const value_type &x)
 {
-    difference_type index = position - start;
+    difference_type index = pos - start;
     value_type x_copy = x;
     if (index < size() / 2)
     {

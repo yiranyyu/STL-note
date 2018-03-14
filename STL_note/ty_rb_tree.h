@@ -1,8 +1,7 @@
-#pragma once
+ï»¿#pragma once
 #include "ty_iterator.h"
 #include "ty_alloc.h"
 #include "ty_construct.h"
-#include <cstddef>
 
 namespace ty
 {
@@ -16,15 +15,6 @@ struct pair
     pair() : first(T1()), second(T2()) {}
     pair(const T1 &a, const T2 &b) : first(a), second(b) {}
 };
-
-#ifdef _USE_MALLOC
-template<int> class __malloc_alloc_template;
-typedef __malloc_alloc_template<0> malloc_alloc;
-typedef malloc_alloc alloc;
-#else
-template<bool, int> class __default_alloc_template;
-typedef  __default_alloc_template<0, 0> alloc;
-#endif
 
 using __rb_tree_color_type = bool;
 const __rb_tree_color_type __rb_tree_red = false;
@@ -64,10 +54,10 @@ struct __rb_tree_base_iterator
 {
     using base_ptr          = __rb_tree_node_base::base_ptr;
     using iterator_category = bidirectional_iterator_tag;
-    using difference_type   = ::std::ptrdiff_t;
+    using difference_type   = ptrdiff_t;
     
 
-    base_ptr node;// ÓÃÀ´ÓëÈİÆ÷Ö®¼ä²úÉúÁ¬½á¹ØÏµ(make a reference)
+    base_ptr node;// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµ(make a reference)
     void increment()
     {
         if (node->right != nullptr)
@@ -79,7 +69,7 @@ struct __rb_tree_base_iterator
         else
         {
             base_ptr y = node->parent;
-            while (node == y->right)// Ò»Ö±ÉÏËİ£¬Ö±µ½ node ²»ÊÇÓÒ½áµã
+            while (node == y->right)// Ò»Ö±ï¿½ï¿½ï¿½İ£ï¿½Ö±ï¿½ï¿½ node ï¿½ï¿½ï¿½ï¿½ï¿½Ò½ï¿½ï¿½
             {
                 node = y;
                 y = y->parent;
@@ -131,6 +121,16 @@ struct __rb_tree_iterator : public __rb_tree_base_iterator
 
     reference operator*() const { return link_type(node)->value_field; }
     pointer operator->() const { return &(operator*()); }
+
+    bool operator==(const self &that)const noexcept
+    {
+        return this->node == that.node;
+    }
+
+    bool operator!=(const self &that)const noexcept
+    {
+        return this->node != that.node;
+    }
 
     self& operator++() { increment(); return *this; }
     self operator++(int)
@@ -217,12 +217,12 @@ protected:
     }
 
 protected:
-    // RB-tree Ö»ÒÔÈı±ÊÊı¾İ±íÏÖ
+    // RB-tree Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½İ±ï¿½ï¿½ï¿½
     size_type node_count;
     link_type header;
     Compare key_compare;
 
-    // ÒÔÏÂÈı¸öº¯ÊıÓÃÀ´·½±ãÈ¡µÃheaderµÄ³ÉÔ±
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½headerï¿½Ä³ï¿½Ô±
     link_type& root() const { return (link_type&)header->parent; }
     link_type& leftmost() const { return (link_type&)header->left; }
     link_type& rightmost() const { return (link_type&)header->right; }
@@ -274,7 +274,7 @@ protected:
     }
     static color_type& color(base_ptr x)
     {
-        return (color_type&)(link_type(x)->color);
+        return (color_type&)(x->color);
     }
 
     // get max and min value
@@ -295,7 +295,7 @@ public:
 
     void clear() //<======================================================== bug
     {
-
+        // TODO
     }
 
     ~rb_tree()
@@ -313,6 +313,8 @@ public:
     Compare key_comp() const { return key_compare; }
     iterator begin() { return leftmost(); }
     iterator end() { return header; }
+    const_iterator begin() const{ return leftmost(); }
+    const_iterator end() const { return header; }
     bool empty() const { return node_count == 0; }
     size_type size() const { return node_count; }
     size_type max_size() const { return size_type(-1); }
@@ -323,17 +325,17 @@ public:
         link_type x = root();   // current node
         while (x != nullptr)
         {
-            if (!key_compare(key(x), k))    y = x, x = left(x);
+            if (!key_compare(Key(x), key))    y = x, x = left(x);
             else                            x = right(x);
         }
         iterator j = iterator(y);
-        return (j == end() || key_compare(k, key(j.node))) ? end() : j;
+        return (j == end() || key_compare(key, Key(j.node))) ? end() : j;
     }
 
 public:
-    // ±£³Ö½áµã¶ÀÒ»ÎŞ¶ş
+    // ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½Ò»ï¿½Ş¶ï¿½
     pair<iterator, bool> insert_unique(const value_type &x);
-    // ÔÊĞí½ÚµãÖµÖØ¸´
+    // ï¿½ï¿½ï¿½ï¿½Úµï¿½Öµï¿½Ø¸ï¿½
     iterator insert_equal(const value_type &x);
 private:
     iterator __insert(base_ptr x, base_ptr y, const value_type &v);
@@ -341,7 +343,7 @@ private:
     void __erase(link_type x);
     void init()
     {
-        header = get_node();            // ²úÉúÒ»¸ö½áµã¿Õ¼ä£¬ÁîheaderÖ¸ÏòËû
+        header = get_node();            // ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Õ¼ä£¬ï¿½ï¿½headerÖ¸ï¿½ï¿½ï¿½ï¿½
         color(header) = __rb_tree_red;  // set header color red, the distinguish it from the root, whitch is black.
 
         root() = 0;
@@ -350,8 +352,8 @@ private:
     }
 };
 
-// ²åÈëĞÂÖµ£º½Úµã¼üÖµÔÊĞíÖØ¸´
-// ×¢Òâ£¬·µ»ØÖµÊÇÒ»¸öRB-treeµü´úÆ÷£¬Ö¸ÏòĞÂÔö½Úµã
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Úµï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½
+// ×¢ï¿½â£¬ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Ò»ï¿½ï¿½RB-treeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½
 template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
 typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
 rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_equal(const value_type &v)
@@ -362,15 +364,15 @@ rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_equal(const value_type &
     while (x != nullptr)
     {
         y = x;
-        // Óö´óÔòÍù×ó£¬·ñÔòÍùÓÒ
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ó£¬·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         cmp = key_compare(KeyOfValue()(v), key(x));
         x = cmp ? left(x) : right(x);
     }
     return __insert(x, y, v);
 }
-// ²åÈëĞÂÖµ£º½Úµã¼üÖµ²»ÔÊĞíÖØ¸´£¬ÈôÖØ¸´Ôò²åÈëÎŞĞ§
-// ×¢Òâ£¬·µ»ØÖµÊÇ¸öpair£¬µÚÒ»¸öÔªËØÊÇ¸öRB-treeµü´úÆ÷£¬Ö¸ÏòĞÂÔö½Úµã£¬
-// µÚ¶şÔªËØ±íÊ¾²åÈë³É¹¦Óë·ñ
+// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Úµï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ğ§
+// ×¢ï¿½â£¬ï¿½ï¿½ï¿½ï¿½Öµï¿½Ç¸ï¿½pairï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Ôªï¿½ï¿½ï¿½Ç¸ï¿½RB-treeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµã£¬
+// ï¿½Ú¶ï¿½Ôªï¿½Ø±ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½É¹ï¿½ï¿½ï¿½ï¿½
 template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Alloc>
 pair<typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator, bool>
 rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_unique(const value_type &v)
@@ -387,7 +389,7 @@ rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_unique(const value_type 
     // now  y is the parent node of the postion 
     //      x is the pos to do insert
     iterator j = iterator(y);
-    if (cmp)   // Èç¹ûÀë¿ªÑ­»·Ê±cmpÎªtrue, ±íÊ¾Óöµ½´ó£¬½«Òª²åÈëÓë×ó²à¡£
+    if (cmp)   // ï¿½ï¿½ï¿½ï¿½ë¿ªÑ­ï¿½ï¿½Ê±cmpÎªtrue, ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ó£¬½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à¡£
     {
         if (j == begin())   return pair<iterator, bool>(__insert(x, y, v), true);
         else                --j;// adjust j to test again
@@ -408,7 +410,7 @@ __insert(base_ptr x_, base_ptr y_, const Value &v)
     link_type y = (link_type)y_;
     link_type z;
 
-    // key_compare ÊÇ¼üÖµ´óĞ¡±È½Ï×¼Ôò£¬Ó¦¸Ã»áÊÇÒ»¸öfunction object
+    // key_compare ï¿½Ç¼ï¿½Öµï¿½ï¿½Ğ¡ï¿½È½ï¿½×¼ï¿½ï¿½Ó¦ï¿½Ã»ï¿½ï¿½ï¿½Ò»ï¿½ï¿½function object
     if (y == header || x != 0 || key_compare(KeyOfValue()(v), key(y)))
     {
         z = create_node(v); // make a new node
@@ -418,8 +420,8 @@ __insert(base_ptr x_, base_ptr y_, const Value &v)
             root() = z;
             rightmost() = z;
         }
-        else if (y == leftmost())  // ±£³ÖheaderµÄleft child Ê¼ÖÕÎªleftmost
-            leftmost = z;
+        else if (y == leftmost())  // ï¿½ï¿½ï¿½ï¿½headerï¿½ï¿½left child Ê¼ï¿½ï¿½Îªleftmost
+            leftmost() = z;
     }
     else
     {
@@ -506,8 +508,8 @@ __rb_tree_rotate_left(__rb_tree_node_base *x, __rb_tree_node_base *&root)
     }
     y->parent = x->parent;
 
-    // Áî y ÍêÈ«¶¥Ìæ x µÄµØÎ»£¨±ØĞë½« x ¶ÔÆä¸¸½ÚµãµÄ¹ØÏµÍêÈ«½ÓÊÕ¹ıÀ´£©
-    if      (x == root)             root == y;
+    // ï¿½ï¿½ y ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ x ï¿½Äµï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ë½« x ï¿½ï¿½ï¿½ä¸¸ï¿½Úµï¿½Ä¹ï¿½Ïµï¿½ï¿½È«ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½ï¿½ï¿½ï¿½
+    if      (x == root)             root = y;
     else if (x == x->parent->left)  x->parent->left = y;
     else                            x->parent->right = y;
     y->left   = x;
@@ -518,7 +520,7 @@ inline void
 __rb_tree_rotate_right(__rb_tree_node_base *x, __rb_tree_node_base *&root)
 {
     __rb_tree_node_base *y = x->left;
-    if (y->right != nullptr)    //±ğÍüÁËÉè¶¨¸¸½Úµã
+    if (y->right != nullptr)    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½è¶¨ï¿½ï¿½ï¿½Úµï¿½
         y->right->parent = x;
     y->parent = x->parent;
 

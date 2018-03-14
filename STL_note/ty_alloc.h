@@ -1,9 +1,7 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef _TY_ALLOC_H
 #define _TY_ALLOC_H
-
-namespace ty {
 
 // if you want to change the config, change 0 to 1
 #if 0
@@ -14,6 +12,7 @@ namespace ty {
 #   define __THROW_BAD_ALLOC std::cerr << "out of memory" << std::endl; exit(1)
 #endif
 
+namespace ty {
 // inst makes nothing
 template <int inst>
 class __malloc_alloc_template
@@ -47,9 +46,9 @@ public:
     }
 
     // monitor set_new_handler
-    static void(*set_malloc_handler(void(*f)())) ()
+    static decltype(__malloc_alloc_oom_handler) set_malloc_handler(void(*f)())
     {
-        void(*old) () = __malloc_alloc_oom_handler; // store the old handler
+        auto old = __malloc_alloc_oom_handler; // store the old handler
 
         __malloc_alloc_oom_handler = f;
         return (old);
@@ -104,7 +103,7 @@ typedef __malloc_alloc_template<0> malloc_alloc;
 
 enum
 {
-    __ALIGN = 8     // Ð¡ÐÍÇø¿éµÄÉÏµ÷±ß½ç
+    __ALIGN = 8     // Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½ß½ï¿½
 };
 enum
 {
@@ -276,7 +275,7 @@ char *__default_alloc_template<threads, inst>::chunk_alloc(size_t size, int &nob
     }
     else if (rest_size >= size)     // enough for at least one block of size size
     {
-        nobjs = rest_size / size;// true assign numbes of blocks
+        nobjs = rest_size / size;// true assign numbers of blocks
         total_bytes = size * nobjs;
         result = (obj*)start_free;
         start_free += total_bytes;
@@ -308,14 +307,14 @@ char *__default_alloc_template<threads, inst>::chunk_alloc(size_t size, int &nob
             obj *volatile *my_free_list;
             obj *pointer_to_block;
 
-            // ¿ªÊ¼ËÑÑ°ÊÊµ±µÄfree list
-            // ËùÎ½ÊÊµ±ÊÇÖ¸ ¡°ÉÐÓÐÎ´ÓÃÇø¿é£¬ÇÒÇø¿é¹»´ó¡±µÄ free list
+            // ï¿½ï¿½Ê¼ï¿½ï¿½Ñ°ï¿½Êµï¿½ï¿½ï¿½free list
+            // ï¿½ï¿½Î½ï¿½Êµï¿½ï¿½ï¿½Ö¸ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½é£¬ï¿½ï¿½ï¿½ï¿½ï¿½é¹»ï¿½ó¡±µï¿½ free list
             for (block_size = size; block_size <= __MAX_BYTES; block_size += __ALIGN)
             {
                 my_free_list = free_list + FREELIST_INDEX(block_size);
                 pointer_to_block = *my_free_list;
 
-                if (0 != my_free_list) // if this list is not empty
+                if (0 != pointer_to_block) // if this list is not empty
                 {
                     // adjust this list to release the unused block
                     *my_free_list = pointer_to_block->free_list_link;
@@ -367,6 +366,16 @@ public:
         Alloc::deallocate(p, sizeof(T));
     }
 };
+
+#ifdef _USE_MALLOC
+template<int> class __malloc_alloc_template;
+typedef __malloc_alloc_template<0> malloc_alloc;
+typedef malloc_alloc alloc;
+#else
+template<bool, int> class __default_alloc_template;
+typedef  __default_alloc_template<0, 0> alloc;
+#endif
+
 }// namespace ty
 
 #endif // !_TY_ALLOC_H

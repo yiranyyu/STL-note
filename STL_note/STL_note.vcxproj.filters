@@ -69,16 +69,22 @@
     <ClInclude Include="ty_set.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="map.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ty_ hash_table.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ty_hash_fun.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ty_stl_numeric.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ty_algobase.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ty_hash_table.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ty_map.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ty_algo.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
