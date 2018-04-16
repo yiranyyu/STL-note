@@ -1,23 +1,15 @@
-#pragma once
+﻿#pragma once
 
 
 #include <memory.h>
 #include <algorithm>
 #include <cstring>
+#include "ty_function.h"
 #include "ty_iterator.h"
 #include "ty_rb_tree.h"
 #include "ty_alloc.h"
 
 namespace ty {
-
-template<typename T>
-struct identity
-{
-    const T& operator()(const T &x) const noexcept
-    {
-        return x; 
-    }
-};
 
 template <class T>
 inline const T& max(const T &a, const T &b)

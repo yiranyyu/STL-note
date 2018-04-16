@@ -4,7 +4,8 @@
 #include "ty_iterator.h"
 #include "ty_type_traits.h"
 namespace ty
-{
+{// provide max-heap implementation
+
 
 // only called when element before last assigned and other parts already heaped
 // otherwise the behavior is undefined
@@ -132,22 +133,22 @@ void __adjust_heap(RandomAccessIterator first,
                    T value)
 {
     Distance topIndex = holeIndex;  // store first hole index for swim operation
-    Distance secondeChild = 2 * holeIndex + 2;  // since heap used first pos of container, need 2 offset
+    Distance secondChild = 2 * holeIndex + 2;  // since heap used first pos of container, need 2 offset
 
     // sink to bottom
-    while (secondeChild < len)// while hole has right child
+    while (secondChild < len)// while hole has right child
     {
-        if (*(first + secondeChild) < *(first + (secondeChild - 1)))
-            secondeChild--;  //get index of largest child
-        *(first + holeIndex) = *(first + secondeChild);
-        holeIndex = secondeChild;
-        secondeChild = 2 * (secondeChild + 1);
+        if (*(first + secondChild) < *(first + (secondChild - 1)))
+            secondChild--;  //get index of largest child
+        *(first + holeIndex) = *(first + secondChild);
+        holeIndex = secondChild;
+        secondChild = 2 * (secondChild + 1);
     }
 
-    if (secondeChild == len)// if have one left child left
+    if (secondChild == len)// if have one left child left
     {
-        *(first + holeIndex) = *(first + (secondeChild - 1));
-        holeIndex = secondeChild - 1;
+        *(first + holeIndex) = *(first + (secondChild - 1));
+        holeIndex = secondChild - 1;
     }
 
     // swim "value"
@@ -192,6 +193,17 @@ void sort_heap(RandomAccessIterator first, RandomAccessIterator last)
     while (last - first > 1)
     {
         pop_heap(first, last);
+        --last;
+    }
+}
+
+template<typename RandomAccessIterator, class Compare>
+inline
+void sort_heap(RandomAccessIterator first, RandomAccessIterator last, Compare cmp)
+{
+    while (last - first > 1)
+    {
+        pop_heap(first, last, cmp);
         --last;
     }
 }

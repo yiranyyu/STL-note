@@ -5,7 +5,6 @@
 #include "ty_alloc.h"
 #include "ty_uninitialized.h"
 #include "ty_construct.h"
-#include <cctype> // for std::prtdiff_t
 #include "ty_algobase.h"
 
 namespace ty {
@@ -22,7 +21,7 @@ public:
     typedef value_type&         reference;
     typedef const value_type&   const_reference;
     typedef size_t              size_type;
-    typedef std::ptrdiff_t      difference_type;
+    typedef ptrdiff_t      difference_type;
     typedef Alloc               allocator_type;
 
     vector() : start(0), finish(0), end_of_storage(0) {}
